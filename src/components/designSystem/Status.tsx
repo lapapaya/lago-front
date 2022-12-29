@@ -1,3 +1,4 @@
+import { ReactNode } from 'react'
 import styled from 'styled-components'
 
 import { theme } from '~/styles'
@@ -8,6 +9,7 @@ import { Typography } from './Typography'
 export enum StatusEnum {
   running = 'running',
   paused = 'paused',
+  pending = 'pending',
   failed = 'failed',
   error = 'error',
 }
@@ -16,7 +18,7 @@ export type StatusType = keyof typeof StatusEnum
 interface StatusProps {
   type: StatusType
   className?: string
-  label?: string
+  label?: string | ReactNode
 }
 
 const STATUS_CONFIG = {
@@ -26,6 +28,10 @@ const STATUS_CONFIG = {
   },
   [StatusEnum.paused]: {
     label: 'text_624efab67eb2570101d117f6',
+    color: theme.palette.grey[500],
+  },
+  [StatusEnum.pending]: {
+    label: 'text_63ac8850ff7117ad55777d3b',
     color: theme.palette.grey[500],
   },
   [StatusEnum.failed]: {

@@ -3418,6 +3418,15 @@ export type InvoiceForDetailsTableFragment = { __typename?: 'Invoice', couponTot
 
 export type InvoiceForDetailsTableFooterFragment = { __typename?: 'Invoice', couponTotalAmountCents: number, creditNoteTotalAmountCents: number, subTotalVatExcludedAmountCents: number, subTotalVatIncludedAmountCents: number, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, vatAmountCents: number, walletTransactionAmountCents: number };
 
+export type InvoiceListItemFragment = { __typename?: 'Invoice', id: string, status: InvoiceStatusTypeEnum, paymentStatus: InvoicePaymentStatusTypeEnum, number: string, issuingDate: any, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, customer: { __typename?: 'Customer', id: string, name?: string | null, applicableTimezone: TimezoneEnum } };
+
+export type DownloadInvoiceItemMutationVariables = Exact<{
+  input: DownloadInvoiceInput;
+}>;
+
+
+export type DownloadInvoiceItemMutation = { __typename?: 'Mutation', downloadInvoice?: { __typename?: 'Invoice', id: string, fileUrl?: string | null } | null };
+
 export type BillableMetricForPlanFragment = { __typename?: 'BillableMetric', id: string, name: string, code: string, flatGroups?: Array<{ __typename?: 'Group', id: string, key?: string | null, value: string }> | null };
 
 export type GetbillableMetricsQueryVariables = Exact<{
@@ -3860,7 +3869,7 @@ export type InvoicesListQueryVariables = Exact<{
 }>;
 
 
-export type InvoicesListQuery = { __typename?: 'Query', invoices: { __typename?: 'InvoiceCollection', metadata: { __typename?: 'CollectionMetadata', currentPage: number, totalPages: number }, collection: Array<{ __typename?: 'Invoice', id: string }> } };
+export type InvoicesListQuery = { __typename?: 'Query', invoices: { __typename?: 'InvoiceCollection', metadata: { __typename?: 'CollectionMetadata', currentPage: number, totalPages: number }, collection: Array<{ __typename?: 'Invoice', id: string, status: InvoiceStatusTypeEnum, paymentStatus: InvoicePaymentStatusTypeEnum, number: string, issuingDate: any, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, customer: { __typename?: 'Customer', id: string, name?: string | null, applicableTimezone: TimezoneEnum } }> } };
 
 export type PlansQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Int']>;
@@ -4156,6 +4165,22 @@ export const CustomerUsageForUsageDetailsFragmentDoc = gql`
   }
 }
     `;
+export const InvoiceListItemFragmentDoc = gql`
+    fragment InvoiceListItem on Invoice {
+  id
+  status
+  paymentStatus
+  number
+  issuingDate
+  totalAmountCents
+  totalAmountCurrency
+  customer {
+    id
+    name
+  }
+  ...InvoiceForFinalizeInvoice
+}
+    ${InvoiceForFinalizeInvoiceFragmentDoc}`;
 export const BillableMetricForPlanFragmentDoc = gql`
     fragment billableMetricForPlan on BillableMetric {
   id
@@ -5976,6 +6001,40 @@ export function useFinalizeInvoiceMutation(baseOptions?: Apollo.MutationHookOpti
 export type FinalizeInvoiceMutationHookResult = ReturnType<typeof useFinalizeInvoiceMutation>;
 export type FinalizeInvoiceMutationResult = Apollo.MutationResult<FinalizeInvoiceMutation>;
 export type FinalizeInvoiceMutationOptions = Apollo.BaseMutationOptions<FinalizeInvoiceMutation, FinalizeInvoiceMutationVariables>;
+export const DownloadInvoiceItemDocument = gql`
+    mutation downloadInvoiceItem($input: DownloadInvoiceInput!) {
+  downloadInvoice(input: $input) {
+    id
+    fileUrl
+  }
+}
+    `;
+export type DownloadInvoiceItemMutationFn = Apollo.MutationFunction<DownloadInvoiceItemMutation, DownloadInvoiceItemMutationVariables>;
+
+/**
+ * __useDownloadInvoiceItemMutation__
+ *
+ * To run a mutation, you first call `useDownloadInvoiceItemMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDownloadInvoiceItemMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [downloadInvoiceItemMutation, { data, loading, error }] = useDownloadInvoiceItemMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useDownloadInvoiceItemMutation(baseOptions?: Apollo.MutationHookOptions<DownloadInvoiceItemMutation, DownloadInvoiceItemMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DownloadInvoiceItemMutation, DownloadInvoiceItemMutationVariables>(DownloadInvoiceItemDocument, options);
+      }
+export type DownloadInvoiceItemMutationHookResult = ReturnType<typeof useDownloadInvoiceItemMutation>;
+export type DownloadInvoiceItemMutationResult = Apollo.MutationResult<DownloadInvoiceItemMutation>;
+export type DownloadInvoiceItemMutationOptions = Apollo.BaseMutationOptions<DownloadInvoiceItemMutation, DownloadInvoiceItemMutationVariables>;
 export const GetbillableMetricsDocument = gql`
     query getbillableMetrics($page: Int, $limit: Int) {
   billableMetrics(page: $page, limit: $limit) {
@@ -7939,10 +7998,11 @@ export const InvoicesListDocument = gql`
     }
     collection {
       id
+      ...InvoiceListItem
     }
   }
 }
-    `;
+    ${InvoiceListItemFragmentDoc}`;
 
 /**
  * __useInvoicesListQuery__

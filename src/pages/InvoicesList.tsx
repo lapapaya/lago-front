@@ -9,11 +9,13 @@ import {
   useInvoicesListQuery,
   InvoiceStatusTypeEnum,
   InvoicePaymentStatusTypeEnum,
+  InvoiceListItemFragmentDoc,
 } from '~/generated/graphql'
 import { theme, PageHeader, ListHeader, ListContainer } from '~/styles'
 import { GenericPlaceholder } from '~/components/GenericPlaceholder'
 import ErrorImage from '~/public/images/maneki/error.svg'
-import { InvoiceListItemSkeleton } from '~/components/invoices/InvoiceListItem'
+import { InvoiceListItemSkeleton, InvoiceListItem } from '~/components/invoices/InvoiceListItem'
+import { useListKeysNavigation } from '~/hooks/ui/useListKeyNavigation'
 
 gql`
   query invoicesList(
@@ -29,9 +31,12 @@ gql`
       }
       collection {
         id
+        ...InvoiceListItem
       }
     }
   }
+
+  ${InvoiceListItemFragmentDoc}
 `
 
 export enum InvoiceListTabEnum {
@@ -59,13 +64,16 @@ const InvoicesList = () => {
     },
   })
 
+  const { onKeyDown } = useListKeysNavigation({
+    getElmId: (i) => `invoice-item-${i}`,
+    navigate: (id) => console.log('todo', id),
+  })
+
   let index = -1
 
-  console.log(data)
-
   return (
-    <div>
-      <PageHeader>
+    <div role="grid" tabIndex={-1} onKeyDown={onKeyDown}>
+      <PageHeader $withSide>
         <Typography variant="bodyHl" color="grey700">
           {translate('text_63ac86d797f728a87b2f9f85')}
         </Typography>
@@ -112,9 +120,9 @@ const InvoicesList = () => {
             <Typography variant="bodyHl" color="grey500">
               {translate('text_63ac86d797f728a87b2f9fad')}
             </Typography>
-            <Typography variant="bodyHl" color="grey500" noWrap>
+            <CustomerName variant="bodyHl" color="grey500" noWrap>
               {translate('text_63ac86d797f728a87b2f9fb3')}
-            </Typography>
+            </CustomerName>
             <Typography variant="bodyHl" color="grey500" align="right">
               {translate('text_63ac86d797f728a87b2f9fb9')}
             </Typography>
@@ -123,16 +131,31 @@ const InvoicesList = () => {
             </Typography>
           </GridLine>
           <InfiniteScroll
-          // onBottom={() => {
-          //   const { currentPage = 0, totalPages = 0 } = data?.invoices?.metadata || {}
+            onBottom={() => {
+              const { currentPage = 0, totalPages = 0 } = data?.invoices?.metadata || {}
 
-          //   currentPage < totalPages &&
-          //     !loading &&
-          //     fetchMore({
-          //       variables: { page: currentPage + 1 },
-          //     })
-          // }}
+              currentPage < totalPages &&
+                !loading &&
+                fetchMore({
+                  variables: { page: currentPage + 1 },
+                })
+            }}
           >
+            {data?.invoices?.collection.map((invoice) => {
+              index += 1
+
+              return (
+                <InvoiceListItem
+                  key={invoice.id}
+                  context="organization"
+                  invoice={invoice}
+                  navigationProps={{
+                    id: `invoice-item-${index}`,
+                    'data-id': invoice.id,
+                  }}
+                />
+              )
+            })}
             {loading &&
               [0, 1, 2].map((_, i) => (
                 <InvoiceListItemSkeleton key={`invoice-item-skeleton-${i}`} />
@@ -150,4 +173,14 @@ const GridLine = styled(ListHeader)`
   display: grid;
   grid-template-columns: 112px 160px 1fr 160px 112px;
   gap: ${theme.spacing(3)};
+
+  ${theme.breakpoints.down('md')} {
+    grid-template-columns: 112px 1fr 160px 112px;
+  }
+`
+
+const CustomerName = styled(Typography)`
+  ${theme.breakpoints.down('md')} {
+    display: none;
+  }
 `
