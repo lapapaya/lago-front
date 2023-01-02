@@ -6,6 +6,7 @@ import { intlFormatNumber } from '~/core/formats/intlFormatNumber'
 import { Skeleton, Button, Typography, StatusEnum, Status, Popper } from '~/components/designSystem'
 import { theme, BaseListItem, PopperOpener, ListItemLink, MenuPopper } from '~/styles'
 import { addToast } from '~/core/apolloClient'
+import { TimezoneDate } from '~/components/TimezoneDate'
 import {
   InvoiceListItemFragment,
   InvoiceStatusTypeEnum,
@@ -15,7 +16,7 @@ import {
 } from '~/generated/graphql'
 import { deserializeAmount } from '~/core/serializers/serializeAmount'
 import { ListKeyNavigationItemProps } from '~/hooks/ui/useListKeyNavigation'
-import { useOrganizationTimezone } from '~/hooks/useOrganizationTimezone'
+// import { useOrganizationTimezone } from '~/hooks/useOrganizationTimezone'
 import { useInternationalization } from '~/hooks/core/useInternationalization'
 import { copyToClipboard } from '~/core/utils/copyToClipboard'
 
@@ -33,6 +34,7 @@ gql`
     customer {
       id
       name
+      applicableTimezone
     }
     ...InvoiceForFinalizeInvoice
   }
@@ -81,7 +83,7 @@ const mapStatusConfig = (
     status === InvoiceStatusTypeEnum.Finalized &&
     paymentStatus === InvoicePaymentStatusTypeEnum.Pending
   ) {
-    return { label: 'text_63ac8850ff7117ad55777d3b', type: StatusEnum.pending }
+    return { label: 'text_63ac8850ff7117ad55777d3b', type: StatusEnum.draft }
   }
 }
 
@@ -98,7 +100,7 @@ export const InvoiceListItem = ({ context, invoice, navigationProps }: InvoiceLi
     totalAmountCents,
     totalAmountCurrency,
   } = invoice
-  const { formatTimeOrgaTZ } = useOrganizationTimezone()
+  // const { formatTimeOrgaTZ } = useOrganizationTimezone()
   const statusConfig = mapStatusConfig(status, paymentStatus)
   const [downloadInvoice] = useDownloadInvoiceItemMutation({
     onCompleted({ downloadInvoice: data }) {
@@ -147,7 +149,7 @@ export const InvoiceListItem = ({ context, invoice, navigationProps }: InvoiceLi
           })}
         </Typography>
         <Typography color="grey700" align="right">
-          {formatTimeOrgaTZ(issuingDate)}
+          <TimezoneDate date={issuingDate} customerTimezone={customer?.applicableTimezone} />
         </Typography>
       </GridItem>
       <Popper

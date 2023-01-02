@@ -3418,7 +3418,7 @@ export type InvoiceForDetailsTableFragment = { __typename?: 'Invoice', couponTot
 
 export type InvoiceForDetailsTableFooterFragment = { __typename?: 'Invoice', couponTotalAmountCents: number, creditNoteTotalAmountCents: number, subTotalVatExcludedAmountCents: number, subTotalVatIncludedAmountCents: number, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, vatAmountCents: number, walletTransactionAmountCents: number };
 
-export type InvoiceListItemFragment = { __typename?: 'Invoice', id: string, status: InvoiceStatusTypeEnum, paymentStatus: InvoicePaymentStatusTypeEnum, number: string, issuingDate: any, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, customer: { __typename?: 'Customer', id: string, name?: string | null, applicableTimezone: TimezoneEnum } };
+export type InvoiceListItemFragment = { __typename?: 'Invoice', id: string, status: InvoiceStatusTypeEnum, paymentStatus: InvoicePaymentStatusTypeEnum, number: string, issuingDate: any, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, customer: { __typename?: 'Customer', id: string, name?: string | null, timezone?: TimezoneEnum | null, applicableTimezone: TimezoneEnum } };
 
 export type DownloadInvoiceItemMutationVariables = Exact<{
   input: DownloadInvoiceInput;
@@ -3869,7 +3869,14 @@ export type InvoicesListQueryVariables = Exact<{
 }>;
 
 
-export type InvoicesListQuery = { __typename?: 'Query', invoices: { __typename?: 'InvoiceCollection', metadata: { __typename?: 'CollectionMetadata', currentPage: number, totalPages: number }, collection: Array<{ __typename?: 'Invoice', id: string, status: InvoiceStatusTypeEnum, paymentStatus: InvoicePaymentStatusTypeEnum, number: string, issuingDate: any, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, customer: { __typename?: 'Customer', id: string, name?: string | null, applicableTimezone: TimezoneEnum } }> } };
+export type InvoicesListQuery = { __typename?: 'Query', invoices: { __typename?: 'InvoiceCollection', metadata: { __typename?: 'CollectionMetadata', currentPage: number, totalPages: number }, collection: Array<{ __typename?: 'Invoice', id: string, status: InvoiceStatusTypeEnum, paymentStatus: InvoicePaymentStatusTypeEnum, number: string, issuingDate: any, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, customer: { __typename?: 'Customer', id: string, name?: string | null, timezone?: TimezoneEnum | null, applicableTimezone: TimezoneEnum } }> } };
+
+export type RetryInvoicePaymentMutationVariables = Exact<{
+  input: RetryInvoicePaymentInput;
+}>;
+
+
+export type RetryInvoicePaymentMutation = { __typename?: 'Mutation', retryInvoicePayment?: { __typename?: 'Invoice', id: string, status: InvoiceStatusTypeEnum, paymentStatus: InvoicePaymentStatusTypeEnum, number: string, issuingDate: any, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, customer: { __typename?: 'Customer', id: string, name?: string | null, timezone?: TimezoneEnum | null, applicableTimezone: TimezoneEnum } } | null };
 
 export type PlansQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Int']>;
@@ -4177,6 +4184,7 @@ export const InvoiceListItemFragmentDoc = gql`
   customer {
     id
     name
+    timezone
   }
   ...InvoiceForFinalizeInvoice
 }
@@ -8034,6 +8042,40 @@ export function useInvoicesListLazyQuery(baseOptions?: Apollo.LazyQueryHookOptio
 export type InvoicesListQueryHookResult = ReturnType<typeof useInvoicesListQuery>;
 export type InvoicesListLazyQueryHookResult = ReturnType<typeof useInvoicesListLazyQuery>;
 export type InvoicesListQueryResult = Apollo.QueryResult<InvoicesListQuery, InvoicesListQueryVariables>;
+export const RetryInvoicePaymentDocument = gql`
+    mutation retryInvoicePayment($input: RetryInvoicePaymentInput!) {
+  retryInvoicePayment(input: $input) {
+    id
+    ...InvoiceListItem
+  }
+}
+    ${InvoiceListItemFragmentDoc}`;
+export type RetryInvoicePaymentMutationFn = Apollo.MutationFunction<RetryInvoicePaymentMutation, RetryInvoicePaymentMutationVariables>;
+
+/**
+ * __useRetryInvoicePaymentMutation__
+ *
+ * To run a mutation, you first call `useRetryInvoicePaymentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRetryInvoicePaymentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [retryInvoicePaymentMutation, { data, loading, error }] = useRetryInvoicePaymentMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useRetryInvoicePaymentMutation(baseOptions?: Apollo.MutationHookOptions<RetryInvoicePaymentMutation, RetryInvoicePaymentMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RetryInvoicePaymentMutation, RetryInvoicePaymentMutationVariables>(RetryInvoicePaymentDocument, options);
+      }
+export type RetryInvoicePaymentMutationHookResult = ReturnType<typeof useRetryInvoicePaymentMutation>;
+export type RetryInvoicePaymentMutationResult = Apollo.MutationResult<RetryInvoicePaymentMutation>;
+export type RetryInvoicePaymentMutationOptions = Apollo.BaseMutationOptions<RetryInvoicePaymentMutation, RetryInvoicePaymentMutationVariables>;
 export const PlansDocument = gql`
     query plans($page: Int, $limit: Int) {
   plans(page: $page, limit: $limit) {

@@ -9,7 +9,7 @@ import { Typography } from './Typography'
 export enum StatusEnum {
   running = 'running',
   paused = 'paused',
-  pending = 'pending',
+  draft = 'draft',
   failed = 'failed',
   error = 'error',
 }
@@ -30,7 +30,7 @@ const STATUS_CONFIG = {
     label: 'text_624efab67eb2570101d117f6',
     color: theme.palette.grey[500],
   },
-  [StatusEnum.pending]: {
+  [StatusEnum.draft]: {
     label: 'text_63ac8850ff7117ad55777d3b',
     color: theme.palette.grey[500],
   },
@@ -52,7 +52,7 @@ export const Status = ({ type, className, label }: StatusProps) => {
   const config = STATUS_CONFIG[type]
 
   switch (type) {
-    case StatusEnum.paused:
+    case StatusEnum.draft:
       return (
         <Container data-test={type} className={className}>
           <svg height={STATUS_SIZE} width={STATUS_SIZE}>

@@ -36,6 +36,13 @@ gql`
     }
   }
 
+  mutation retryInvoicePayment($input: RetryInvoicePaymentInput!) {
+    retryInvoicePayment(input: $input) {
+      id
+      ...InvoiceListItem
+    }
+  }
+
   ${InvoiceListItemFragmentDoc}
 `
 
@@ -56,10 +63,11 @@ const InvoicesList = () => {
       ...(tab === InvoiceListTabEnum.draft && { status: InvoiceStatusTypeEnum.Draft }),
       ...(tab === InvoiceListTabEnum.pendingFailed && {
         status: InvoiceStatusTypeEnum.Finalized,
-        payementStatus: [InvoicePaymentStatusTypeEnum.Failed, InvoicePaymentStatusTypeEnum.Pending],
+        paymentStatus: [InvoicePaymentStatusTypeEnum.Failed, InvoicePaymentStatusTypeEnum.Pending],
       }),
       ...(tab === InvoiceListTabEnum.succeeded && {
         paymentStatus: InvoicePaymentStatusTypeEnum.Succeeded,
+        status: InvoiceStatusTypeEnum.Finalized,
       }),
     },
   })
