@@ -3,18 +3,25 @@ import { gql } from '@apollo/client'
 import styled from 'styled-components'
 
 import { useInternationalization } from '~/hooks/core/useInternationalization'
-import { Typography, NavigationTab, InfiniteScroll } from '~/components/designSystem'
+import { Typography, NavigationTab, InfiniteScroll, Button } from '~/components/designSystem'
 import { INVOICES_TAB_ROUTE, INVOICES_ROUTE } from '~/core/router'
 import {
   useInvoicesListQuery,
   InvoiceStatusTypeEnum,
   InvoicePaymentStatusTypeEnum,
   InvoiceListItemFragmentDoc,
+  useRetryAllInvoicePaymentsMutation,
 } from '~/generated/graphql'
 import { theme, PageHeader, ListHeader, ListContainer } from '~/styles'
 import { GenericPlaceholder } from '~/components/GenericPlaceholder'
 import ErrorImage from '~/public/images/maneki/error.svg'
-import { InvoiceListItemSkeleton, InvoiceListItem } from '~/components/invoices/InvoiceListItem'
+import { addToast } from '~/core/apolloClient'
+import {
+  InvoiceListItemSkeleton,
+  InvoiceListItem,
+  InvoiceListItemGridTemplate,
+  InvoiceListItemContextEnum,
+} from '~/components/invoices/InvoiceListItem'
 import { useListKeysNavigation } from '~/hooks/ui/useListKeyNavigation'
 
 gql`
@@ -28,6 +35,7 @@ gql`
       metadata {
         currentPage
         totalPages
+        totalCount
       }
       collection {
         id
@@ -36,10 +44,11 @@ gql`
     }
   }
 
-  mutation retryInvoicePayment($input: RetryInvoicePaymentInput!) {
-    retryInvoicePayment(input: $input) {
-      id
-      ...InvoiceListItem
+  mutation retryAllInvoicePayments($input: RetryAllInvoicePaymentsInput!) {
+    retryAllInvoicePayments(input: $input) {
+      collection {
+        id
+      }
     }
   }
 
@@ -71,6 +80,16 @@ const InvoicesList = () => {
       }),
     },
   })
+  const [retryAll, { called }] = useRetryAllInvoicePaymentsMutation({
+    onCompleted({ retryAllInvoicePayments }) {
+      if (retryAllInvoicePayments) {
+        addToast({
+          severity: 'success',
+          translateKey: 'text_63ac86d897f728a87b2fa0a7',
+        })
+      }
+    },
+  })
 
   const { onKeyDown } = useListKeysNavigation({
     getElmId: (i) => `invoice-item-${i}`,
@@ -85,6 +104,15 @@ const InvoicesList = () => {
         <Typography variant="bodyHl" color="grey700">
           {translate('text_63ac86d797f728a87b2f9f85')}
         </Typography>
+
+        {tab === InvoiceListTabEnum.pendingFailed && (
+          <Button
+            disabled={!data?.invoices?.metadata?.totalCount || called}
+            onClick={async () => await retryAll({ variables: { input: {} } })}
+          >
+            {translate('text_63ac86d797f728a87b2f9fc4')}
+          </Button>
+        )}
       </PageHeader>
       <NavigationTab
         tabs={[
@@ -121,7 +149,7 @@ const InvoicesList = () => {
         />
       ) : (
         <ListContainer>
-          <GridLine $withActions>
+          <GridLine>
             <Typography variant="bodyHl" color="grey500">
               {translate('text_63ac86d797f728a87b2f9fa7')}
             </Typography>
@@ -178,13 +206,7 @@ const InvoicesList = () => {
 export default InvoicesList
 
 const GridLine = styled(ListHeader)`
-  display: grid;
-  grid-template-columns: 112px 160px 1fr 160px 112px;
-  gap: ${theme.spacing(3)};
-
-  ${theme.breakpoints.down('md')} {
-    grid-template-columns: 112px 1fr 160px 112px;
-  }
+  ${InvoiceListItemGridTemplate(InvoiceListItemContextEnum.organization)}
 `
 
 const CustomerName = styled(Typography)`

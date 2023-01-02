@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import { Typography, Tooltip, Icon, TypographyProps } from '~/components/designSystem'
 import { TimezoneEnum } from '~/generated/graphql'
@@ -19,6 +19,7 @@ interface TimezoneDateProps {
   mainTimezone?: keyof typeof MainTimezoneEnum
   customerTimezone: TimezoneEnum
   mainTypographyProps?: Pick<TypographyProps, 'variant' | 'color'>
+  alignRight?: boolean
 }
 
 export const TimezoneDate = ({
@@ -27,6 +28,7 @@ export const TimezoneDate = ({
   mainTimezone = MainTimezoneEnum.organization,
   customerTimezone,
   mainTypographyProps,
+  alignRight = false,
 }: TimezoneDateProps) => {
   const { translate } = useInternationalization()
   const { timezone, timezoneConfig, formatTimeOrgaTZ } = useOrganizationTimezone()
@@ -68,7 +70,7 @@ export const TimezoneDate = ({
       }
       placement="top-end"
     >
-      <Date color="grey700" {...mainTypographyProps} noWrap>
+      <Date color="grey700" {...mainTypographyProps} noWrap $alignRight={alignRight}>
         {formatDateToTZ(
           date,
           mainTimezone === MainTimezoneEnum.organization
@@ -83,9 +85,14 @@ export const TimezoneDate = ({
   )
 }
 
-const Date = styled(Typography)`
+const Date = styled(Typography)<{ $alignRight?: boolean }>`
   border-bottom: 2px dotted ${theme.palette.grey[400]};
   width: max-content;
+  ${({ $alignRight }) =>
+    $alignRight &&
+    css`
+      float: right;
+    `}
 `
 
 const Header = styled(Typography)`

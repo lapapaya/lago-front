@@ -4,7 +4,7 @@ import { gql } from '@apollo/client'
 
 import { intlFormatNumber } from '~/core/formats/intlFormatNumber'
 import { Skeleton, Button, Typography, StatusEnum, Status, Popper } from '~/components/designSystem'
-import { theme, BaseListItem, PopperOpener, ListItemLink, MenuPopper } from '~/styles'
+import { theme, BaseListItem, ListItemLink, MenuPopper, NAV_HEIGHT } from '~/styles'
 import { addToast } from '~/core/apolloClient'
 import { TimezoneDate } from '~/components/TimezoneDate'
 import {
@@ -13,10 +13,11 @@ import {
   InvoicePaymentStatusTypeEnum,
   useDownloadInvoiceItemMutation,
   InvoiceForFinalizeInvoiceFragmentDoc,
+  useRetryInvoicePaymentMutation,
 } from '~/generated/graphql'
+import { formatDateToTZ } from '~/core/timezone'
 import { deserializeAmount } from '~/core/serializers/serializeAmount'
 import { ListKeyNavigationItemProps } from '~/hooks/ui/useListKeyNavigation'
-// import { useOrganizationTimezone } from '~/hooks/useOrganizationTimezone'
 import { useInternationalization } from '~/hooks/core/useInternationalization'
 import { copyToClipboard } from '~/core/utils/copyToClipboard'
 
@@ -46,16 +47,25 @@ gql`
     }
   }
 
+  mutation retryInvoicePayment($input: RetryInvoicePaymentInput!) {
+    retryInvoicePayment(input: $input) {
+      id
+      ...InvoiceListItem
+    }
+  }
+
   ${InvoiceForFinalizeInvoiceFragmentDoc}
 `
 
-enum InvoiceListItemContextEnum {
+export enum InvoiceListItemContextEnum {
   customer = 'customer',
   organization = 'organization',
 }
 
+type InvoiceListContext = keyof typeof InvoiceListItemContextEnum
+
 interface InvoiceListItemProps {
-  context: keyof typeof InvoiceListItemContextEnum
+  context: InvoiceListContext
   invoice: InvoiceListItemFragment
   navigationProps?: ListKeyNavigationItemProps
 }
@@ -65,7 +75,7 @@ const mapStatusConfig = (
   paymentStatus: InvoicePaymentStatusTypeEnum
 ) => {
   if (status === InvoiceStatusTypeEnum.Draft) {
-    return { label: 'text_63ac8850ff7117ad55777d31', type: StatusEnum.paused }
+    return { label: 'text_63ac8850ff7117ad55777d31', type: StatusEnum.draft }
   }
 
   if (paymentStatus === InvoicePaymentStatusTypeEnum.Succeeded) {
@@ -83,7 +93,7 @@ const mapStatusConfig = (
     status === InvoiceStatusTypeEnum.Finalized &&
     paymentStatus === InvoicePaymentStatusTypeEnum.Pending
   ) {
-    return { label: 'text_63ac8850ff7117ad55777d3b', type: StatusEnum.draft }
+    return { label: 'text_63ac8850ff7117ad55777d3b', type: StatusEnum.paused }
   }
 }
 
@@ -100,8 +110,17 @@ export const InvoiceListItem = ({ context, invoice, navigationProps }: InvoiceLi
     totalAmountCents,
     totalAmountCurrency,
   } = invoice
-  // const { formatTimeOrgaTZ } = useOrganizationTimezone()
   const statusConfig = mapStatusConfig(status, paymentStatus)
+  const [retryCollect] = useRetryInvoicePaymentMutation({
+    onCompleted({ retryInvoicePayment }) {
+      if (!!retryInvoicePayment?.id) {
+        addToast({
+          severity: 'success',
+          translateKey: 'text_63ac86d897f728a87b2fa0b3',
+        })
+      }
+    },
+  })
   const [downloadInvoice] = useDownloadInvoiceItemMutation({
     onCompleted({ downloadInvoice: data }) {
       const fileUrl = data?.fileUrl
@@ -128,8 +147,8 @@ export const InvoiceListItem = ({ context, invoice, navigationProps }: InvoiceLi
   })
 
   return (
-    <Item to="#" tabIndex={0} {...navigationProps}>
-      <GridItem>
+    <Item to="#" tabIndex={0} {...navigationProps} $context={context}>
+      <GridItem $context={context}>
         <Status
           type={statusConfig?.type as StatusEnum}
           label={translate(statusConfig?.label || '')}
@@ -148,14 +167,22 @@ export const InvoiceListItem = ({ context, invoice, navigationProps }: InvoiceLi
             currency: totalAmountCurrency,
           })}
         </Typography>
-        <Typography color="grey700" align="right">
-          <TimezoneDate date={issuingDate} customerTimezone={customer?.applicableTimezone} />
-        </Typography>
+        {context === InvoiceListItemContextEnum.organization ? (
+          <TimezoneDate
+            date={issuingDate}
+            customerTimezone={customer?.applicableTimezone}
+            alignRight
+          />
+        ) : (
+          <Typography color="grey700" align="right">
+            {formatDateToTZ(issuingDate, customer.applicableTimezone)}
+          </Typography>
+        )}
       </GridItem>
       <Popper
         PopperProps={{ placement: 'bottom-end' }}
         opener={
-          <PopperOpener>
+          <PopperOpener $context={context}>
             <Button icon="dots-horizontal" variant="quaternary" />
           </PopperOpener>
         }
@@ -187,6 +214,28 @@ export const InvoiceListItem = ({ context, invoice, navigationProps }: InvoiceLi
                 {translate('text_63a41a8eabb9ae67047c1c08')}
               </Button>
             )}
+            {status === InvoiceStatusTypeEnum.Finalized &&
+              [InvoicePaymentStatusTypeEnum.Failed, InvoicePaymentStatusTypeEnum.Pending].includes(
+                paymentStatus
+              ) && (
+                <Button
+                  startIcon="push"
+                  variant="quaternary"
+                  align="left"
+                  onClick={async () => {
+                    await retryCollect({
+                      variables: {
+                        input: {
+                          id,
+                        },
+                      },
+                    })
+                    closePopper()
+                  }}
+                >
+                  {translate('text_63ac86d897f728a87b2fa039')}
+                </Button>
+              )}
             <Button
               startIcon="duplicate"
               variant="quaternary"
@@ -221,30 +270,37 @@ export const InvoiceListItemSkeleton = () => {
       <div />
       <div />
       <Skeleton variant="text" height={12} width={120} />
-      <PopperOpener>
+      <PopperOpener $context={InvoiceListItemContextEnum.customer}>
         <Button variant="quaternary" icon="dots-horizontal" disabled />
       </PopperOpener>
     </SkeletonItem>
   )
 }
 
-const Grid = css`
-  position: relative;
+export const InvoiceListItemGridTemplate = (context: InvoiceListContext) => css`
   display: grid;
-  grid-template-columns: 112px 160px 1fr 160px 112px 40px;
+  grid-template-columns: ${context === InvoiceListItemContextEnum.organization
+    ? '112px 160px 1fr 160px 112px 40px'
+    : '112px 1fr 160px 112px 40px'};
   gap: ${theme.spacing(3)};
-  align-items: center;
-  width: 100%;
-  /* padding: 0 ${theme.spacing(28)} 0 ${theme.spacing(12)}; */
 
   ${theme.breakpoints.down('md')} {
     grid-template-columns: 112px 1fr 160px 112px 40px;
-    /* padding: 0 ${theme.spacing(20)} 0 ${theme.spacing(4)}; */
   }
 `
 
-const GridItem = styled.div`
-  ${Grid}
+const Grid = (context: InvoiceListContext) => css`
+  position: relative;
+  display: grid;
+
+  gap: ${theme.spacing(3)};
+  align-items: center;
+  width: 100%;
+  ${InvoiceListItemGridTemplate(context)}
+`
+
+const GridItem = styled.div<{ $context: InvoiceListContext }>`
+  ${({ $context }) => Grid($context)}
 `
 
 const CustomerName = styled(Typography)`
@@ -254,11 +310,16 @@ const CustomerName = styled(Typography)`
 `
 
 const SkeletonItem = styled(BaseListItem)`
-  ${Grid}
+  ${() => Grid(InvoiceListItemContextEnum.customer)}
 `
 
-const Item = styled(ListItemLink)`
+const Item = styled(ListItemLink)<{ $context: InvoiceListContext }>`
   position: relative;
+  ${({ $context }) =>
+    $context === InvoiceListItemContextEnum.customer &&
+    css`
+      padding: 0 ${theme.spacing(4)};
+    `}
 `
 
 const StatusBlock = styled.div`
@@ -266,5 +327,17 @@ const StatusBlock = styled.div`
   align-items: center;
   > *:first-child {
     margin-right: ${theme.spacing(2)};
+  }
+`
+
+const PopperOpener = styled.div<{ $context: InvoiceListContext }>`
+  position: absolute;
+  right: ${({ $context }) =>
+    theme.spacing($context === InvoiceListItemContextEnum.customer ? 4 : 12)};
+  top: ${NAV_HEIGHT / 2 - 20}px;
+  z-index: 1;
+
+  ${theme.breakpoints.down('md')} {
+    right: ${theme.spacing(4)};
   }
 `

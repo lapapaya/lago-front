@@ -8,12 +8,21 @@ import {
   InvoiceStatusTypeEnum,
   TimezoneEnum,
   useGetCustomerInvoicesQuery,
+  InvoiceListItemFragmentDoc,
 } from '~/generated/graphql'
-import { Typography } from '~/components/designSystem'
+import { Typography, Tooltip } from '~/components/designSystem'
 import { theme } from '~/styles'
 import { useInternationalization } from '~/hooks/core/useInternationalization'
 import ErrorImage from '~/public/images/maneki/error.svg'
 import { GenericPlaceholder } from '~/components/GenericPlaceholder'
+import { ListHeader } from '~/styles'
+import { formatDateToTZ, getTimezoneConfig } from '~/core/timezone'
+import {
+  InvoiceListItemSkeleton,
+  InvoiceListItem,
+  InvoiceListItemGridTemplate,
+  InvoiceListItemContextEnum,
+} from '~/components/invoices/InvoiceListItem'
 
 import { InvoicesList } from './InvoicesList'
 
@@ -30,6 +39,7 @@ gql`
       ...InvoiceInfosForInvoiceList
       collection {
         status
+        ...InvoiceListItem
         ...InvoiceForFinalizeInvoice
       }
     }
@@ -44,6 +54,7 @@ gql`
   ${InvoiceInfosForCustomerDraftInvoicesListFragmentDoc}
   ${InvoiceInfosForInvoiceListFragmentDoc}
   ${InvoiceForFinalizeInvoiceFragmentDoc}
+  ${InvoiceListItemFragmentDoc}
 `
 
 interface CustomerInvoicesListProps {
@@ -118,6 +129,69 @@ export const CustomerInvoicesList = ({
                   metadata={dataDraft?.customerInvoices.metadata}
                 />
               )}
+              {!!invoicesDraft?.length && (
+                <ListWrapper>
+                  <HeaderLine>
+                    <Typography variant="bodyHl" color="grey500">
+                      {translate('text_63ac86d797f728a87b2f9fa7')}
+                    </Typography>
+                    <Typography variant="bodyHl" color="grey500">
+                      {translate('text_63ac86d797f728a87b2f9fad')}
+                    </Typography>
+
+                    <Typography variant="bodyHl" color="grey500" align="right">
+                      {translate('text_63ac86d797f728a87b2f9fb9')}
+                    </Typography>
+                    <Tooltip
+                      placement="top-start"
+                      title={translate('text_6390ea10cf97ec5780001c9d', {
+                        offset: getTimezoneConfig(customerTimezone).offset,
+                      })}
+                    >
+                      <WithTooltip variant="bodyHl" color="disabled">
+                        {translate('text_62544c1db13ca10187214d7f')}
+                      </WithTooltip>
+                    </Tooltip>
+                  </HeaderLine>
+                  {invoicesDraft.map((invoice) => {
+                    return (
+                      <InvoiceListItem key={invoice?.id} invoice={invoice} context="customer" />
+                    )
+                  })}
+                </ListWrapper>
+              )}
+
+              {!!invoicesFinalized?.length && (
+                <ListWrapper>
+                  <HeaderLine>
+                    <Typography variant="bodyHl" color="grey500">
+                      {translate('text_63ac86d797f728a87b2f9fa7')}
+                    </Typography>
+                    <Typography variant="bodyHl" color="grey500">
+                      {translate('text_63ac86d797f728a87b2f9fad')}
+                    </Typography>
+
+                    <Typography variant="bodyHl" color="grey500" align="right">
+                      {translate('text_63ac86d797f728a87b2f9fb9')}
+                    </Typography>
+                    <Tooltip
+                      placement="top-start"
+                      title={translate('text_6390ea10cf97ec5780001c9d', {
+                        offset: getTimezoneConfig(customerTimezone).offset,
+                      })}
+                    >
+                      <WithTooltip variant="bodyHl" color="disabled">
+                        {translate('text_62544c1db13ca10187214d7f')}
+                      </WithTooltip>
+                    </Tooltip>
+                  </HeaderLine>
+                  {invoicesFinalized.map((invoice) => {
+                    return (
+                      <InvoiceListItem key={invoice?.id} invoice={invoice} context="customer" />
+                    )
+                  })}
+                </ListWrapper>
+              )}
               {!!invoicesFinalized?.length && (
                 <InvoicesList
                   customerTimezone={customerTimezone}
@@ -140,4 +214,28 @@ export const CustomerInvoicesList = ({
 
 const EmptyTitle = styled(Typography)`
   margin-top: ${theme.spacing(6)};
+`
+
+const HeaderLine = styled(ListHeader)`
+  ${InvoiceListItemGridTemplate(InvoiceListItemContextEnum.customer)}
+  background-color: ${theme.palette.common.white};
+  border-radius: 12px 12px 0 0;
+  padding: 0 ${theme.spacing(4)};
+`
+
+const ListWrapper = styled.div`
+  border: 1px solid ${theme.palette.grey[400]};
+  border-radius: 12px;
+
+  > *:last-child {
+    box-shadow: none;
+    border-radius: 0 0 12px 12px;
+  }
+`
+
+const WithTooltip = styled(Typography)`
+  border-bottom: 2px dotted ${theme.palette.grey[400]};
+  width: fit-content;
+  margin-top: 2px;
+  float: right;
 `

@@ -237,7 +237,7 @@ const DesignSystem = () => {
                 <Block $marginBottom={theme.spacing(6)}>
                   <Status type="running" label="running" />
                   <Status type="paused" label="paused" />
-                  <Status type="pending" label="pending" />
+                  <Status type="draft" label="draft" />
                   <Status type="failed" label="failed" />
                   <Status type="error" label="error" />
                   <Status type="running" label="I can be labelled with anything" />

@@ -13,7 +13,9 @@ export const formatDateToTZ = (
   timezone: TimezoneEnum | null | undefined,
   format?: string
 ) => {
-  return DateTime.fromISO(date, {
+  const safeDate = DateTime.fromISO(date).toISO() // Make sure dates has time defined
+
+  return DateTime.fromISO(safeDate, {
     zone: getTimezoneConfig(timezone).name,
   }).toFormat(format || 'LLL. dd, yyyy')
 }
