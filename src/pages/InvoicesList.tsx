@@ -1,10 +1,10 @@
-import { generatePath, useParams } from 'react-router-dom'
+import { generatePath, useNavigate, useParams } from 'react-router-dom'
 import { gql } from '@apollo/client'
 import styled from 'styled-components'
 
 import { useInternationalization } from '~/hooks/core/useInternationalization'
 import { Typography, NavigationTab, InfiniteScroll, Button } from '~/components/designSystem'
-import { INVOICES_TAB_ROUTE, INVOICES_ROUTE } from '~/core/router'
+import { INVOICES_TAB_ROUTE, INVOICES_ROUTE, CUSTOMER_INVOICE_DETAILS_ROUTE } from '~/core/router'
 import {
   useInvoicesListQuery,
   InvoiceStatusTypeEnum,
@@ -23,6 +23,7 @@ import {
   InvoiceListItemContextEnum,
 } from '~/components/invoices/InvoiceListItem'
 import { useListKeysNavigation } from '~/hooks/ui/useListKeyNavigation'
+import { CustomerInvoiceDetailsTabsOptionsEnum } from '~/layouts/CustomerInvoiceDetails'
 
 gql`
   query invoicesList(
@@ -62,9 +63,12 @@ export enum InvoiceListTabEnum {
   'succeeded' = 'succeeded',
 }
 
+const ID_SPLIT_KEY = '&%&'
+
 const InvoicesList = () => {
   const { tab } = useParams<{ tab?: InvoiceListTabEnum }>()
   const { translate } = useInternationalization()
+  const navigate = useNavigate()
   const { data, loading, error, fetchMore } = useInvoicesListQuery({
     notifyOnNetworkStatusChange: true,
     variables: {
@@ -93,7 +97,17 @@ const InvoicesList = () => {
 
   const { onKeyDown } = useListKeysNavigation({
     getElmId: (i) => `invoice-item-${i}`,
-    navigate: (id) => console.log('todo', id),
+    navigate: (id) => {
+      const splitted = String(id).split(ID_SPLIT_KEY)
+
+      navigate(
+        generatePath(CUSTOMER_INVOICE_DETAILS_ROUTE, {
+          id: splitted[0],
+          invoiceId: splitted[1],
+          tab: CustomerInvoiceDetailsTabsOptionsEnum.overview,
+        })
+      )
+    },
   })
 
   let index = -1
@@ -187,14 +201,22 @@ const InvoicesList = () => {
                   invoice={invoice}
                   navigationProps={{
                     id: `invoice-item-${index}`,
-                    'data-id': invoice.id,
+                    'data-id': `${invoice?.customer?.id}${ID_SPLIT_KEY}${invoice.id}`,
                   }}
+                  to={generatePath(CUSTOMER_INVOICE_DETAILS_ROUTE, {
+                    id: invoice?.customer?.id,
+                    invoiceId: invoice.id,
+                    tab: CustomerInvoiceDetailsTabsOptionsEnum.overview,
+                  })}
                 />
               )
             })}
             {loading &&
               [0, 1, 2].map((_, i) => (
-                <InvoiceListItemSkeleton key={`invoice-item-skeleton-${i}`} />
+                <InvoiceListItemSkeleton
+                  key={`invoice-item-skeleton-${i}`}
+                  context="organization"
+                />
               ))}
           </InfiniteScroll>
         </ListContainer>

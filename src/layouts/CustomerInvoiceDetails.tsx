@@ -8,7 +8,6 @@ import {
   Button,
   Skeleton,
   Popper,
-  ButtonLink,
   NavigationTab,
   Avatar,
   Icon,
@@ -52,6 +51,7 @@ import {
   FinalizeInvoiceDialog,
   FinalizeInvoiceDialogRef,
 } from '~/components/invoices/FinalizeInvoiceDialog'
+import { useLocationHistory } from '~/hooks/core/useLocationHistory'
 import { deserializeAmount } from '~/core/serializers/serializeAmount'
 import { copyToClipboard } from '~/core/utils/copyToClipboard'
 
@@ -130,6 +130,7 @@ const CustomerInvoiceDetails = () => {
   const { translate } = useInternationalization()
   const { id, invoiceId } = useParams()
   let navigate = useNavigate()
+  const { goBack } = useLocationHistory()
   const finalizeInvoiceRef = useRef<FinalizeInvoiceDialogRef>(null)
   const [refreshInvoice, { loading: loadingRefreshInvoice }] = useRefreshInvoiceMutation({
     variables: { input: { id: invoiceId || '' } },
@@ -247,13 +248,17 @@ const CustomerInvoiceDetails = () => {
     <>
       <PageHeader $withSide>
         <HeaderLeft>
-          <ButtonLink
-            to={generatePath(CUSTOMER_DETAILS_TAB_ROUTE, {
-              id,
-              tab: CustomerDetailsTabsOptions.invoices,
-            })}
-            type="button"
-            buttonProps={{ variant: 'quaternary', icon: 'arrow-left' }}
+          <Button
+            icon="arrow-left"
+            variant="quaternary"
+            onClick={() =>
+              goBack(
+                generatePath(CUSTOMER_DETAILS_TAB_ROUTE, {
+                  id,
+                  tab: CustomerDetailsTabsOptions.invoices,
+                })
+              )
+            }
           />
           {loading ? (
             <Skeleton variant="text" height={12} width={120} />

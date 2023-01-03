@@ -3264,6 +3264,8 @@ export type GetCustomerCreditNotesQueryVariables = Exact<{
 
 export type GetCustomerCreditNotesQuery = { __typename?: 'Query', customerCreditNotes?: { __typename?: 'CreditNoteCollection', metadata: { __typename?: 'CollectionMetadata', currentPage: number, totalPages: number }, collection: Array<{ __typename?: 'CreditNote', id: string, canBeVoided: boolean, createdAt: any, creditStatus?: CreditNoteCreditStatusEnum | null, number: string, totalAmountCents: any, totalAmountCurrency: CurrencyEnum }> } | null };
 
+export type InvoiceForInvoiceListFragment = { __typename?: 'InvoiceCollection', collection: Array<{ __typename?: 'Invoice', id: string, status: InvoiceStatusTypeEnum, paymentStatus: InvoicePaymentStatusTypeEnum, number: string, issuingDate: any, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, customer: { __typename?: 'Customer', id: string, applicableTimezone: TimezoneEnum, name?: string | null } }>, metadata: { __typename?: 'CollectionMetadata', currentPage: number, totalCount: number, totalPages: number } };
+
 export type GetCustomerInvoicesQueryVariables = Exact<{
   customerId: Scalars['ID'];
   limit?: InputMaybe<Scalars['Int']>;
@@ -3272,14 +3274,7 @@ export type GetCustomerInvoicesQueryVariables = Exact<{
 }>;
 
 
-export type GetCustomerInvoicesQuery = { __typename?: 'Query', customerInvoices: { __typename?: 'InvoiceCollection', collection: Array<{ __typename?: 'Invoice', status: InvoiceStatusTypeEnum, id: string, amountCurrency: CurrencyEnum, issuingDate: any, number: string, paymentStatus: InvoicePaymentStatusTypeEnum, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, customer: { __typename?: 'Customer', id: string, name?: string | null, applicableTimezone: TimezoneEnum } }>, metadata: { __typename?: 'CollectionMetadata', currentPage: number, totalCount: number, totalPages: number } } };
-
-export type DownloadInvoiceMutationVariables = Exact<{
-  input: DownloadInvoiceInput;
-}>;
-
-
-export type DownloadInvoiceMutation = { __typename?: 'Mutation', downloadInvoice?: { __typename?: 'Invoice', id: string, fileUrl?: string | null } | null };
+export type GetCustomerInvoicesQuery = { __typename?: 'Query', customerInvoices: { __typename?: 'InvoiceCollection', collection: Array<{ __typename?: 'Invoice', id: string, status: InvoiceStatusTypeEnum, paymentStatus: InvoicePaymentStatusTypeEnum, number: string, issuingDate: any, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, customer: { __typename?: 'Customer', id: string, applicableTimezone: TimezoneEnum, name?: string | null } }>, metadata: { __typename?: 'CollectionMetadata', currentPage: number, totalCount: number, totalPages: number } } };
 
 export type CustomerItemFragment = { __typename?: 'Customer', id: string, name?: string | null, externalId: string, createdAt: any, canBeDeleted: boolean, activeSubscriptionCount: number, legalName?: string | null, legalNumber?: string | null, phone?: string | null, email?: string | null, addressLine1?: string | null, addressLine2?: string | null, state?: string | null, country?: CountryCode | null, currency?: CurrencyEnum | null, canEditAttributes: boolean, city?: string | null, zipcode?: string | null, paymentProvider?: ProviderTypeEnum | null, timezone?: TimezoneEnum | null, providerCustomer?: { __typename?: 'ProviderCustomer', id: string, providerCustomerId?: string | null, syncWithProvider?: boolean | null } | null };
 
@@ -3338,6 +3333,13 @@ export type UpdateCustomerVatRateMutation = { __typename?: 'Mutation', updateCus
 export type EditCustomerVatRateFragment = { __typename?: 'CustomerDetails', id: string, name?: string | null, vatRate?: number | null };
 
 export type InvoiceInfosForInvoiceListFragment = { __typename?: 'InvoiceCollection', collection: Array<{ __typename?: 'Invoice', id: string, amountCurrency: CurrencyEnum, issuingDate: any, number: string, paymentStatus: InvoicePaymentStatusTypeEnum, status: InvoiceStatusTypeEnum, totalAmountCents: number, customer: { __typename?: 'Customer', id: string, applicableTimezone: TimezoneEnum } }>, metadata: { __typename?: 'CollectionMetadata', currentPage: number, totalCount: number, totalPages: number } };
+
+export type DownloadInvoiceMutationVariables = Exact<{
+  input: DownloadInvoiceInput;
+}>;
+
+
+export type DownloadInvoiceMutation = { __typename?: 'Mutation', downloadInvoice?: { __typename?: 'Invoice', id: string, fileUrl?: string | null } | null };
 
 export type CreditNotesForListFragment = { __typename?: 'CreditNoteCollection', metadata: { __typename?: 'CollectionMetadata', currentPage: number, totalPages: number }, collection: Array<{ __typename?: 'CreditNote', id: string, canBeVoided: boolean, createdAt: any, creditStatus?: CreditNoteCreditStatusEnum | null, number: string, totalAmountCents: any, totalAmountCurrency: CurrencyEnum }> };
 
@@ -3825,14 +3827,15 @@ export type GetCustomerQueryVariables = Exact<{
 
 export type GetCustomerQuery = { __typename?: 'Query', customer?: { __typename?: 'CustomerDetails', id: string, name?: string | null, externalId: string, canBeDeleted: boolean, hasActiveWallet: boolean, currency?: CurrencyEnum | null, hasCreditNotes: boolean, creditNotesCreditsAvailableCount: number, creditNotesBalanceAmountCents: any, applicableTimezone: TimezoneEnum, vatRate?: number | null, legalName?: string | null, legalNumber?: string | null, phone?: string | null, email?: string | null, canEditAttributes: boolean, addressLine1?: string | null, addressLine2?: string | null, state?: string | null, country?: CountryCode | null, city?: string | null, zipcode?: string | null, paymentProvider?: ProviderTypeEnum | null, timezone?: TimezoneEnum | null, invoiceGracePeriod?: number | null, subscriptions: Array<{ __typename?: 'Subscription', id: string, status?: StatusTypeEnum | null, startedAt?: any | null, nextPendingStartDate?: any | null, name?: string | null, nextName?: string | null, externalId: string, periodEndDate?: any | null, subscriptionAt?: any | null, plan: { __typename?: 'Plan', id: string, amountCurrency: CurrencyEnum, name: string, code: string }, nextPlan?: { __typename?: 'Plan', id: string, name: string, code: string } | null }>, appliedCoupons?: Array<{ __typename?: 'AppliedCoupon', id: string, amountCurrency?: CurrencyEnum | null, amountCents?: number | null, amountCentsRemaining?: number | null, percentageRate?: number | null, frequency: CouponFrequency, frequencyDuration?: number | null, frequencyDurationRemaining?: number | null, coupon: { __typename?: 'Coupon', id: string, name: string } }> | null, appliedAddOns?: Array<{ __typename?: 'AppliedAddOn', id: string, amountCents: number, amountCurrency: CurrencyEnum, createdAt: any, addOn: { __typename?: 'AddOn', id: string, name: string } }> | null, providerCustomer?: { __typename?: 'ProviderCustomer', id: string, providerCustomerId?: string | null, syncWithProvider?: boolean | null } | null } | null };
 
-export type InvoiceInfosForCustomerDraftInvoicesListFragment = { __typename?: 'InvoiceCollection', collection: Array<{ __typename?: 'Invoice', id: string, status: InvoiceStatusTypeEnum }>, metadata: { __typename?: 'CollectionMetadata', totalCount: number } };
-
-export type GetCustomerInfosForDraftInvoicesListQueryVariables = Exact<{
-  id: Scalars['ID'];
+export type GetCustomerDraftInvoicesQueryVariables = Exact<{
+  customerId: Scalars['ID'];
+  limit?: InputMaybe<Scalars['Int']>;
+  page?: InputMaybe<Scalars['Int']>;
+  status?: InputMaybe<InvoiceStatusTypeEnum>;
 }>;
 
 
-export type GetCustomerInfosForDraftInvoicesListQuery = { __typename?: 'Query', customer?: { __typename?: 'CustomerDetails', id: string, name?: string | null, externalId: string, applicableTimezone: TimezoneEnum } | null };
+export type GetCustomerDraftInvoicesQuery = { __typename?: 'Query', customerInvoices: { __typename?: 'InvoiceCollection', collection: Array<{ __typename?: 'Invoice', id: string, status: InvoiceStatusTypeEnum, paymentStatus: InvoicePaymentStatusTypeEnum, number: string, issuingDate: any, totalAmountCents: number, totalAmountCurrency: CurrencyEnum, customer: { __typename?: 'Customer', id: string, applicableTimezone: TimezoneEnum, name?: string | null } }>, metadata: { __typename?: 'CollectionMetadata', currentPage: number, totalCount: number, totalPages: number } }, customer?: { __typename?: 'CustomerDetails', id: string, name?: string | null, externalId: string, applicableTimezone: TimezoneEnum } | null };
 
 export type CustomersQueryVariables = Exact<{
   page?: InputMaybe<Scalars['Int']>;
@@ -4059,6 +4062,50 @@ export const TerminateCouponFragmentDoc = gql`
   name
 }
     `;
+export const InvoiceForFinalizeInvoiceFragmentDoc = gql`
+    fragment InvoiceForFinalizeInvoice on Invoice {
+  id
+  issuingDate
+  customer {
+    id
+    applicableTimezone
+  }
+}
+    `;
+export const InvoiceListItemFragmentDoc = gql`
+    fragment InvoiceListItem on Invoice {
+  id
+  status
+  paymentStatus
+  number
+  issuingDate
+  totalAmountCents
+  totalAmountCurrency
+  customer {
+    id
+    name
+    applicableTimezone
+  }
+  ...InvoiceForFinalizeInvoice
+}
+    ${InvoiceForFinalizeInvoiceFragmentDoc}`;
+export const InvoiceForInvoiceListFragmentDoc = gql`
+    fragment InvoiceForInvoiceList on InvoiceCollection {
+  collection {
+    id
+    customer {
+      id
+      applicableTimezone
+    }
+    ...InvoiceListItem
+  }
+  metadata {
+    currentPage
+    totalCount
+    totalPages
+  }
+}
+    ${InvoiceListItemFragmentDoc}`;
 export const AddCustomerDrawerFragmentDoc = gql`
     fragment AddCustomerDrawer on Customer {
   id
@@ -4115,16 +4162,6 @@ export const DeleteCustomerVatRateFragmentDoc = gql`
   name
 }
     `;
-export const InvoiceForFinalizeInvoiceFragmentDoc = gql`
-    fragment InvoiceForFinalizeInvoice on Invoice {
-  id
-  issuingDate
-  customer {
-    id
-    applicableTimezone
-  }
-}
-    `;
 export const InvoiceInfosForInvoiceListFragmentDoc = gql`
     fragment InvoiceInfosForInvoiceList on InvoiceCollection {
   collection {
@@ -4179,23 +4216,6 @@ export const CustomerUsageForUsageDetailsFragmentDoc = gql`
   }
 }
     `;
-export const InvoiceListItemFragmentDoc = gql`
-    fragment InvoiceListItem on Invoice {
-  id
-  status
-  paymentStatus
-  number
-  issuingDate
-  totalAmountCents
-  totalAmountCurrency
-  customer {
-    id
-    name
-    applicableTimezone
-  }
-  ...InvoiceForFinalizeInvoice
-}
-    ${InvoiceForFinalizeInvoiceFragmentDoc}`;
 export const BillableMetricForPlanFragmentDoc = gql`
     fragment billableMetricForPlan on BillableMetric {
   id
@@ -4944,17 +4964,6 @@ ${CustomerVatRateFragmentDoc}
 ${AddCustomerDrawerDetailFragmentDoc}
 ${CustomerMainInfosFragmentDoc}
 ${CustomerInvoiceGracePeriodFragmentDoc}`;
-export const InvoiceInfosForCustomerDraftInvoicesListFragmentDoc = gql`
-    fragment InvoiceInfosForCustomerDraftInvoicesList on InvoiceCollection {
-  collection {
-    id
-    status
-  }
-  metadata {
-    totalCount
-  }
-}
-    `;
 export const EventItemFragmentDoc = gql`
     fragment EventItem on Event {
   id
@@ -5449,17 +5458,10 @@ export const GetCustomerInvoicesDocument = gql`
     page: $page
     status: $status
   ) {
-    ...InvoiceInfosForInvoiceList
-    collection {
-      status
-      ...InvoiceListItem
-      ...InvoiceForFinalizeInvoice
-    }
+    ...InvoiceForInvoiceList
   }
 }
-    ${InvoiceInfosForInvoiceListFragmentDoc}
-${InvoiceListItemFragmentDoc}
-${InvoiceForFinalizeInvoiceFragmentDoc}`;
+    ${InvoiceForInvoiceListFragmentDoc}`;
 
 /**
  * __useGetCustomerInvoicesQuery__
@@ -5491,40 +5493,6 @@ export function useGetCustomerInvoicesLazyQuery(baseOptions?: Apollo.LazyQueryHo
 export type GetCustomerInvoicesQueryHookResult = ReturnType<typeof useGetCustomerInvoicesQuery>;
 export type GetCustomerInvoicesLazyQueryHookResult = ReturnType<typeof useGetCustomerInvoicesLazyQuery>;
 export type GetCustomerInvoicesQueryResult = Apollo.QueryResult<GetCustomerInvoicesQuery, GetCustomerInvoicesQueryVariables>;
-export const DownloadInvoiceDocument = gql`
-    mutation downloadInvoice($input: DownloadInvoiceInput!) {
-  downloadInvoice(input: $input) {
-    id
-    fileUrl
-  }
-}
-    `;
-export type DownloadInvoiceMutationFn = Apollo.MutationFunction<DownloadInvoiceMutation, DownloadInvoiceMutationVariables>;
-
-/**
- * __useDownloadInvoiceMutation__
- *
- * To run a mutation, you first call `useDownloadInvoiceMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useDownloadInvoiceMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [downloadInvoiceMutation, { data, loading, error }] = useDownloadInvoiceMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useDownloadInvoiceMutation(baseOptions?: Apollo.MutationHookOptions<DownloadInvoiceMutation, DownloadInvoiceMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<DownloadInvoiceMutation, DownloadInvoiceMutationVariables>(DownloadInvoiceDocument, options);
-      }
-export type DownloadInvoiceMutationHookResult = ReturnType<typeof useDownloadInvoiceMutation>;
-export type DownloadInvoiceMutationResult = Apollo.MutationResult<DownloadInvoiceMutation>;
-export type DownloadInvoiceMutationOptions = Apollo.BaseMutationOptions<DownloadInvoiceMutation, DownloadInvoiceMutationVariables>;
 export const GetOrganizationSettingsForCustomerDocument = gql`
     query getOrganizationSettingsForCustomer {
   organization {
@@ -5730,6 +5698,40 @@ export function useUpdateCustomerVatRateMutation(baseOptions?: Apollo.MutationHo
 export type UpdateCustomerVatRateMutationHookResult = ReturnType<typeof useUpdateCustomerVatRateMutation>;
 export type UpdateCustomerVatRateMutationResult = Apollo.MutationResult<UpdateCustomerVatRateMutation>;
 export type UpdateCustomerVatRateMutationOptions = Apollo.BaseMutationOptions<UpdateCustomerVatRateMutation, UpdateCustomerVatRateMutationVariables>;
+export const DownloadInvoiceDocument = gql`
+    mutation downloadInvoice($input: DownloadInvoiceInput!) {
+  downloadInvoice(input: $input) {
+    id
+    fileUrl
+  }
+}
+    `;
+export type DownloadInvoiceMutationFn = Apollo.MutationFunction<DownloadInvoiceMutation, DownloadInvoiceMutationVariables>;
+
+/**
+ * __useDownloadInvoiceMutation__
+ *
+ * To run a mutation, you first call `useDownloadInvoiceMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDownloadInvoiceMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [downloadInvoiceMutation, { data, loading, error }] = useDownloadInvoiceMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useDownloadInvoiceMutation(baseOptions?: Apollo.MutationHookOptions<DownloadInvoiceMutation, DownloadInvoiceMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DownloadInvoiceMutation, DownloadInvoiceMutationVariables>(DownloadInvoiceDocument, options);
+      }
+export type DownloadInvoiceMutationHookResult = ReturnType<typeof useDownloadInvoiceMutation>;
+export type DownloadInvoiceMutationResult = Apollo.MutationResult<DownloadInvoiceMutation>;
+export type DownloadInvoiceMutationOptions = Apollo.BaseMutationOptions<DownloadInvoiceMutation, DownloadInvoiceMutationVariables>;
 export const DownloadCreditNoteDocument = gql`
     mutation downloadCreditNote($input: DownloadCreditNoteInput!) {
   downloadCreditNote(input: $input) {
@@ -7831,44 +7833,55 @@ export function useGetCustomerLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
 export type GetCustomerQueryHookResult = ReturnType<typeof useGetCustomerQuery>;
 export type GetCustomerLazyQueryHookResult = ReturnType<typeof useGetCustomerLazyQuery>;
 export type GetCustomerQueryResult = Apollo.QueryResult<GetCustomerQuery, GetCustomerQueryVariables>;
-export const GetCustomerInfosForDraftInvoicesListDocument = gql`
-    query getCustomerInfosForDraftInvoicesList($id: ID!) {
-  customer(id: $id) {
+export const GetCustomerDraftInvoicesDocument = gql`
+    query getCustomerDraftInvoices($customerId: ID!, $limit: Int, $page: Int, $status: InvoiceStatusTypeEnum) {
+  customerInvoices(
+    customerId: $customerId
+    limit: $limit
+    page: $page
+    status: $status
+  ) {
+    ...InvoiceForInvoiceList
+  }
+  customer(id: $customerId) {
     id
     name
     externalId
     applicableTimezone
   }
 }
-    `;
+    ${InvoiceForInvoiceListFragmentDoc}`;
 
 /**
- * __useGetCustomerInfosForDraftInvoicesListQuery__
+ * __useGetCustomerDraftInvoicesQuery__
  *
- * To run a query within a React component, call `useGetCustomerInfosForDraftInvoicesListQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetCustomerInfosForDraftInvoicesListQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGetCustomerDraftInvoicesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetCustomerDraftInvoicesQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useGetCustomerInfosForDraftInvoicesListQuery({
+ * const { data, loading, error } = useGetCustomerDraftInvoicesQuery({
  *   variables: {
- *      id: // value for 'id'
+ *      customerId: // value for 'customerId'
+ *      limit: // value for 'limit'
+ *      page: // value for 'page'
+ *      status: // value for 'status'
  *   },
  * });
  */
-export function useGetCustomerInfosForDraftInvoicesListQuery(baseOptions: Apollo.QueryHookOptions<GetCustomerInfosForDraftInvoicesListQuery, GetCustomerInfosForDraftInvoicesListQueryVariables>) {
+export function useGetCustomerDraftInvoicesQuery(baseOptions: Apollo.QueryHookOptions<GetCustomerDraftInvoicesQuery, GetCustomerDraftInvoicesQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetCustomerInfosForDraftInvoicesListQuery, GetCustomerInfosForDraftInvoicesListQueryVariables>(GetCustomerInfosForDraftInvoicesListDocument, options);
+        return Apollo.useQuery<GetCustomerDraftInvoicesQuery, GetCustomerDraftInvoicesQueryVariables>(GetCustomerDraftInvoicesDocument, options);
       }
-export function useGetCustomerInfosForDraftInvoicesListLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCustomerInfosForDraftInvoicesListQuery, GetCustomerInfosForDraftInvoicesListQueryVariables>) {
+export function useGetCustomerDraftInvoicesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCustomerDraftInvoicesQuery, GetCustomerDraftInvoicesQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetCustomerInfosForDraftInvoicesListQuery, GetCustomerInfosForDraftInvoicesListQueryVariables>(GetCustomerInfosForDraftInvoicesListDocument, options);
+          return Apollo.useLazyQuery<GetCustomerDraftInvoicesQuery, GetCustomerDraftInvoicesQueryVariables>(GetCustomerDraftInvoicesDocument, options);
         }
-export type GetCustomerInfosForDraftInvoicesListQueryHookResult = ReturnType<typeof useGetCustomerInfosForDraftInvoicesListQuery>;
-export type GetCustomerInfosForDraftInvoicesListLazyQueryHookResult = ReturnType<typeof useGetCustomerInfosForDraftInvoicesListLazyQuery>;
-export type GetCustomerInfosForDraftInvoicesListQueryResult = Apollo.QueryResult<GetCustomerInfosForDraftInvoicesListQuery, GetCustomerInfosForDraftInvoicesListQueryVariables>;
+export type GetCustomerDraftInvoicesQueryHookResult = ReturnType<typeof useGetCustomerDraftInvoicesQuery>;
+export type GetCustomerDraftInvoicesLazyQueryHookResult = ReturnType<typeof useGetCustomerDraftInvoicesLazyQuery>;
+export type GetCustomerDraftInvoicesQueryResult = Apollo.QueryResult<GetCustomerDraftInvoicesQuery, GetCustomerDraftInvoicesQueryVariables>;
 export const CustomersDocument = gql`
     query customers($page: Int, $limit: Int) {
   customers(page: $page, limit: $limit) {

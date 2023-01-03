@@ -6,7 +6,6 @@ import { intlFormatNumber } from '~/core/formats/intlFormatNumber'
 import { Skeleton, Button, Typography, StatusEnum, Status, Popper } from '~/components/designSystem'
 import { theme, BaseListItem, ListItemLink, MenuPopper, NAV_HEIGHT } from '~/styles'
 import { addToast } from '~/core/apolloClient'
-import { TimezoneDate } from '~/components/TimezoneDate'
 import {
   InvoiceListItemFragment,
   InvoiceStatusTypeEnum,
@@ -67,7 +66,9 @@ type InvoiceListContext = keyof typeof InvoiceListItemContextEnum
 interface InvoiceListItemProps {
   context: InvoiceListContext
   invoice: InvoiceListItemFragment
+  to: string
   navigationProps?: ListKeyNavigationItemProps
+  className?: string
 }
 
 const mapStatusConfig = (
@@ -97,7 +98,13 @@ const mapStatusConfig = (
   }
 }
 
-export const InvoiceListItem = ({ context, invoice, navigationProps }: InvoiceListItemProps) => {
+export const InvoiceListItem = ({
+  className,
+  context,
+  invoice,
+  to,
+  navigationProps,
+}: InvoiceListItemProps) => {
   const { translate } = useInternationalization()
   const finalizeInvoiceRef = useRef<FinalizeInvoiceDialogRef>(null)
   const {
@@ -147,38 +154,33 @@ export const InvoiceListItem = ({ context, invoice, navigationProps }: InvoiceLi
   })
 
   return (
-    <Item to="#" tabIndex={0} {...navigationProps} $context={context}>
-      <GridItem $context={context}>
-        <Status
-          type={statusConfig?.type as StatusEnum}
-          label={translate(statusConfig?.label || '')}
-        />
-        <Typography variant="captionCode" color="grey700" noWrap>
-          {number}
-        </Typography>
-        {context === InvoiceListItemContextEnum.organization && (
-          <CustomerName color="grey700" noWrap>
-            {customer?.name || '-'}
-          </CustomerName>
-        )}
-        <Typography color="grey700" align="right">
-          {intlFormatNumber(deserializeAmount(totalAmountCents, totalAmountCurrency), {
-            currencyDisplay: 'symbol',
-            currency: totalAmountCurrency,
-          })}
-        </Typography>
-        {context === InvoiceListItemContextEnum.organization ? (
-          <TimezoneDate
-            date={issuingDate}
-            customerTimezone={customer?.applicableTimezone}
-            alignRight
+    <Container>
+      <Item className={className} to={to} tabIndex={0} {...navigationProps} $context={context}>
+        <GridItem $context={context}>
+          <Status
+            type={statusConfig?.type as StatusEnum}
+            label={translate(statusConfig?.label || '')}
           />
-        ) : (
+          <Typography variant="captionCode" color="grey700" noWrap>
+            {number}
+          </Typography>
+          {context === InvoiceListItemContextEnum.organization && (
+            <CustomerName color="grey700" noWrap>
+              {customer?.name || '-'}
+            </CustomerName>
+          )}
+          <Typography color="grey700" align="right">
+            {intlFormatNumber(deserializeAmount(totalAmountCents, totalAmountCurrency), {
+              currencyDisplay: 'symbol',
+              currency: totalAmountCurrency,
+            })}
+          </Typography>
           <Typography color="grey700" align="right">
             {formatDateToTZ(issuingDate, customer.applicableTimezone)}
           </Typography>
-        )}
-      </GridItem>
+        </GridItem>
+        <div />
+      </Item>
       <Popper
         PopperProps={{ placement: 'bottom-end' }}
         opener={
@@ -255,22 +257,26 @@ export const InvoiceListItem = ({ context, invoice, navigationProps }: InvoiceLi
         )}
       </Popper>
       <FinalizeInvoiceDialog ref={finalizeInvoiceRef} />
-    </Item>
+    </Container>
   )
 }
 
-export const InvoiceListItemSkeleton = () => {
+interface InvoiceListItemSkeletonProps {
+  context: InvoiceListContext
+  className?: string
+}
+
+export const InvoiceListItemSkeleton = ({ className, context }: InvoiceListItemSkeletonProps) => {
   return (
-    <SkeletonItem>
+    <SkeletonItem className={className} $context={context}>
       <StatusBlock>
         <Skeleton variant="circular" height={12} width={12} />
         <Skeleton variant="text" height={12} width={92} />
       </StatusBlock>
-      <Skeleton variant="text" height={12} width={160} />
-      <div />
+      <Skeleton variant="text" height={12} width="100%" />
       <div />
       <Skeleton variant="text" height={12} width={120} />
-      <PopperOpener $context={InvoiceListItemContextEnum.customer}>
+      <PopperOpener $context={context}>
         <Button variant="quaternary" icon="dots-horizontal" disabled />
       </PopperOpener>
     </SkeletonItem>
@@ -309,8 +315,13 @@ const CustomerName = styled(Typography)`
   }
 `
 
-const SkeletonItem = styled(BaseListItem)`
+const SkeletonItem = styled(BaseListItem)<{ $context: InvoiceListContext }>`
   ${() => Grid(InvoiceListItemContextEnum.customer)}
+  ${({ $context }) =>
+    $context === InvoiceListItemContextEnum.customer &&
+    css`
+      padding: 0 ${theme.spacing(4)};
+    `}
 `
 
 const Item = styled(ListItemLink)<{ $context: InvoiceListContext }>`
@@ -340,4 +351,8 @@ const PopperOpener = styled.div<{ $context: InvoiceListContext }>`
   ${theme.breakpoints.down('md')} {
     right: ${theme.spacing(4)};
   }
+`
+
+const Container = styled.div`
+  position: relative;
 `
