@@ -18,6 +18,8 @@ import {
   EditCustomerVatRateDialog,
   EditCustomerVatRateDialogRef,
 } from '~/components/customers/EditCustomerVatRateDialog'
+import { useIsPremiumUser } from '~/hooks/customer/useIsPremiumUser'
+import { PremiumWarningDialog, PremiumWarningDialogRef } from '~/components/PremiumWarningDialog'
 
 import {
   EditCustomerInvoiceGracePeriodDialog,
@@ -61,6 +63,8 @@ interface CustomerSettingsProps {
 
 export const CustomerSettings = ({ customer }: CustomerSettingsProps) => {
   const { translate } = useInternationalization()
+  const isPremium = useIsPremiumUser()
+
   const { data } = useGetOrganizationSettingsForCustomerQuery()
   const currentOrganization = data?.organization
 
@@ -68,6 +72,7 @@ export const CustomerSettings = ({ customer }: CustomerSettingsProps) => {
   const deleteVatRateDialogRef = useRef<DeleteCustomerVatRateDialogRef>(null)
   const editInvoiceGracePeriodDialogRef = useRef<EditCustomerInvoiceGracePeriodDialogRef>(null)
   const deleteGracePeriodDialogRef = useRef<DeleteCustomerGracePeriodeDialogRef>(null)
+  const premiumWarningDialogRef = useRef<PremiumWarningDialogRef>(null)
 
   return (
     <SideSection>
@@ -145,8 +150,7 @@ export const CustomerSettings = ({ customer }: CustomerSettingsProps) => {
         />
       </InfoBlock>
 
-      {/* TODO - Release when pricing is out
-       <InlineSectionTitle>
+      <InlineSectionTitle>
         <Typography variant="subhead" color="grey700">
           {translate('text_638dff9779fb99299bee912e')}
         </Typography>
@@ -154,8 +158,12 @@ export const CustomerSettings = ({ customer }: CustomerSettingsProps) => {
           <Button
             variant="quaternary"
             size="large"
-            disabled // TODO - change when pricing is set
-            onClick={() => editInvoiceGracePeriodDialogRef?.current?.openDialog()}
+            endIcon={isPremium ? undefined : 'sparkles'}
+            onClick={
+              isPremium
+                ? editInvoiceGracePeriodDialogRef?.current?.openDialog
+                : premiumWarningDialogRef.current?.openDialog
+            }
           >
             {translate('text_638dff9779fb99299bee912a')}
           </Button>
@@ -221,7 +229,7 @@ export const CustomerSettings = ({ customer }: CustomerSettingsProps) => {
               : translate('text_638dff9779fb99299bee9136')
           }
         />
-      </InfoBlock> */}
+      </InfoBlock>
 
       <EditCustomerVatRateDialog ref={editDialogRef} customer={customer} />
       <DeleteCustomerVatRateDialog ref={deleteVatRateDialogRef} customer={customer} />
@@ -231,6 +239,7 @@ export const CustomerSettings = ({ customer }: CustomerSettingsProps) => {
         invoiceGracePeriod={customer.invoiceGracePeriod || 0}
       />
       <DeleteCustomerGracePeriodeDialog ref={deleteGracePeriodDialogRef} customer={customer} />
+      <PremiumWarningDialog ref={premiumWarningDialogRef} />
     </SideSection>
   )
 }
