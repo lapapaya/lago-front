@@ -37,7 +37,7 @@ import { GenericPlaceholder } from '~/components/GenericPlaceholder'
 import ErrorImage from '~/public/images/maneki/error.svg'
 import { CustomerSubscriptionsList } from '~/components/customers/subscriptions/CustomerSubscriptionsList'
 import { CustomerWalletsList } from '~/components/wallets/CustomerWalletList'
-import { CustomerInvoicesList } from '~/components/customers/CustomerInvoicesList'
+import { CustomerInvoicesTab } from '~/components/customers/CustomerInvoicesTab'
 import { CustomerSettings } from '~/components/customers/CustomerSettings'
 import { theme, PageHeader, MenuPopper } from '~/styles'
 import { SectionHeader } from '~/styles/customer'
@@ -397,7 +397,7 @@ const CustomerDetails = () => {
                       routerState: { disableScrollTop: true },
                       component: (
                         <SideBlock>
-                          <CustomerInvoicesList
+                          <CustomerInvoicesTab
                             customerId={id as string}
                             customerTimezone={safeTimezone}
                           />

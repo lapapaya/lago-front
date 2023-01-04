@@ -12,9 +12,10 @@ import {
   InvoiceListItemFragmentDoc,
   useRetryAllInvoicePaymentsMutation,
 } from '~/generated/graphql'
-import { theme, PageHeader, ListHeader, ListContainer } from '~/styles'
+import { theme, PageHeader, ListHeader, ListContainer, NAV_HEIGHT } from '~/styles'
 import { GenericPlaceholder } from '~/components/GenericPlaceholder'
 import ErrorImage from '~/public/images/maneki/error.svg'
+import EmptyImage from '~/public/images/maneki/empty.svg'
 import { addToast } from '~/core/apolloClient'
 import {
   InvoiceListItemSkeleton,
@@ -161,65 +162,89 @@ const InvoicesList = () => {
           buttonAction={location.reload}
           image={<ErrorImage width="136" height="104" />}
         />
+      ) : !loading && !data?.invoices?.collection?.length ? (
+        <GenericPlaceholder
+          title={translate(
+            tab === InvoiceListTabEnum.all
+              ? 'text_63b578e959c1366df5d14569'
+              : tab === InvoiceListTabEnum.draft
+              ? 'text_63b578e959c1366df5d1455b'
+              : tab === InvoiceListTabEnum.pendingFailed
+              ? 'text_63b578e959c1366df5d1456e'
+              : 'text_63b578e959c1366df5d14559'
+          )}
+          subtitle={translate(
+            tab === InvoiceListTabEnum.all
+              ? 'text_63b578e959c1366df5d1456d'
+              : tab === InvoiceListTabEnum.draft
+              ? 'text_63b578e959c1366df5d14566'
+              : tab === InvoiceListTabEnum.pendingFailed
+              ? 'text_63b578e959c1366df5d14570'
+              : 'text_63b578e959c1366df5d1455f'
+          )}
+          image={<EmptyImage width="136" height="104" />}
+        />
       ) : (
-        <ListContainer>
-          <GridLine>
-            <Typography variant="bodyHl" color="grey500">
-              {translate('text_63ac86d797f728a87b2f9fa7')}
-            </Typography>
-            <Typography variant="bodyHl" color="grey500">
-              {translate('text_63ac86d797f728a87b2f9fad')}
-            </Typography>
-            <CustomerName variant="bodyHl" color="grey500" noWrap>
-              {translate('text_63ac86d797f728a87b2f9fb3')}
-            </CustomerName>
-            <Typography variant="bodyHl" color="grey500" align="right">
-              {translate('text_63ac86d797f728a87b2f9fb9')}
-            </Typography>
-            <Typography variant="bodyHl" color="grey500" align="right">
-              {translate('text_63ac86d797f728a87b2f9fbf')}
-            </Typography>
-          </GridLine>
-          <InfiniteScroll
-            onBottom={() => {
-              const { currentPage = 0, totalPages = 0 } = data?.invoices?.metadata || {}
+        <ScrollContainer>
+          <List>
+            <GridLine>
+              <Typography variant="bodyHl" color="grey500">
+                {translate('text_63ac86d797f728a87b2f9fa7')}
+              </Typography>
+              <Typography variant="bodyHl" color="grey500" noWrap>
+                {translate('text_63ac86d797f728a87b2f9fad')}
+              </Typography>
+              <CustomerName variant="bodyHl" color="grey500" noWrap>
+                {translate('text_63ac86d797f728a87b2f9fb3')}
+              </CustomerName>
+              <Typography variant="bodyHl" color="grey500" align="right">
+                {translate('text_63ac86d797f728a87b2f9fb9')}
+              </Typography>
+              <Typography variant="bodyHl" color="grey500" align="right">
+                {translate('text_63ac86d797f728a87b2f9fbf')}
+              </Typography>
+            </GridLine>
+            <InfiniteScroll
+              onBottom={() => {
+                const { currentPage = 0, totalPages = 0 } = data?.invoices?.metadata || {}
 
-              currentPage < totalPages &&
-                !loading &&
-                fetchMore({
-                  variables: { page: currentPage + 1 },
-                })
-            }}
-          >
-            {data?.invoices?.collection.map((invoice) => {
-              index += 1
+                currentPage < totalPages &&
+                  !loading &&
+                  fetchMore({
+                    variables: { page: currentPage + 1 },
+                  })
+              }}
+            >
+              {data?.invoices?.collection.map((invoice) => {
+                index += 1
 
-              return (
-                <InvoiceListItem
-                  key={invoice.id}
-                  context="organization"
-                  invoice={invoice}
-                  navigationProps={{
-                    id: `invoice-item-${index}`,
-                    'data-id': `${invoice?.customer?.id}${ID_SPLIT_KEY}${invoice.id}`,
-                  }}
-                  to={generatePath(CUSTOMER_INVOICE_DETAILS_ROUTE, {
-                    id: invoice?.customer?.id,
-                    invoiceId: invoice.id,
-                    tab: CustomerInvoiceDetailsTabsOptionsEnum.overview,
-                  })}
-                />
-              )
-            })}
-            {loading &&
-              [0, 1, 2].map((_, i) => (
-                <InvoiceListItemSkeleton
-                  key={`invoice-item-skeleton-${i}`}
-                  context="organization"
-                />
-              ))}
-          </InfiniteScroll>
-        </ListContainer>
+                return (
+                  <InvoiceListItem
+                    key={invoice.id}
+                    context="organization"
+                    invoice={invoice}
+                    navigationProps={{
+                      id: `invoice-item-${index}`,
+                      'data-id': `${invoice?.customer?.id}${ID_SPLIT_KEY}${invoice.id}`,
+                    }}
+                    to={generatePath(CUSTOMER_INVOICE_DETAILS_ROUTE, {
+                      id: invoice?.customer?.id,
+                      invoiceId: invoice.id,
+                      tab: CustomerInvoiceDetailsTabsOptionsEnum.overview,
+                    })}
+                  />
+                )
+              })}
+              {loading &&
+                [0, 1, 2].map((_, i) => (
+                  <InvoiceListItemSkeleton
+                    key={`invoice-item-skeleton-${i}`}
+                    context="organization"
+                  />
+                ))}
+            </InfiniteScroll>
+          </List>
+        </ScrollContainer>
       )}
     </div>
   )
@@ -227,8 +252,21 @@ const InvoicesList = () => {
 
 export default InvoicesList
 
+const ScrollContainer = styled.div`
+  overflow: auto;
+  height: calc(100vh - ${NAV_HEIGHT}px);
+`
+
+const List = styled(ListContainer)`
+  min-width: 740px;
+  ${theme.breakpoints.down('md')} {
+    min-width: 530px;
+  }
+`
+
 const GridLine = styled(ListHeader)`
   ${InvoiceListItemGridTemplate(InvoiceListItemContextEnum.organization)}
+  top: 0;
 `
 
 const CustomerName = styled(Typography)`

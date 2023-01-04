@@ -16,7 +16,7 @@ import { GenericPlaceholder } from '~/components/GenericPlaceholder'
 import { CUSTOMER_DRAFT_INVOICES_LIST_ROUTE, CUSTOMER_INVOICE_DETAILS_ROUTE } from '~/core/router'
 import { CustomerInvoiceDetailsTabsOptionsEnum } from '~/layouts/CustomerInvoiceDetails'
 
-import { InvoiceList } from './CustomerInvoiceListV2'
+import { CustomerInvoiceList } from './CustomerInvoiceList'
 
 const DRAFT_INVOICES_ITEMS_COUNT = 4
 
@@ -35,15 +35,12 @@ gql`
   ${InvoiceForInvoiceListFragmentDoc}
 `
 
-interface CustomerInvoicesListProps {
+interface CustomerInvoicesTabProps {
   customerId: string
   customerTimezone: TimezoneEnum
 }
 
-export const CustomerInvoicesList = ({
-  customerId,
-  customerTimezone,
-}: CustomerInvoicesListProps) => {
+export const CustomerInvoicesTab = ({ customerId, customerTimezone }: CustomerInvoicesTabProps) => {
   const navigate = useNavigate()
   const { translate } = useInternationalization()
   const {
@@ -87,7 +84,11 @@ export const CustomerInvoicesList = ({
       {initialLoad ? (
         <LoadingState>
           <Skeleton variant="text" width={224} height={12} marginBottom="30px" />
-          <InvoiceList loading customerTimezone={customerTimezone} getOnClickLink={() => ''} />
+          <CustomerInvoiceList
+            loading
+            customerTimezone={customerTimezone}
+            getOnClickLink={() => ''}
+          />
         </LoadingState>
       ) : (
         <>
@@ -100,7 +101,7 @@ export const CustomerInvoicesList = ({
                   <Title variant="subhead" color="grey700">
                     {translate('text_638f4d756d899445f18a49ee')}
                   </Title>
-                  <InvoiceList
+                  <CustomerInvoiceList
                     loading={loadingDraft}
                     customerTimezone={customerTimezone}
                     getOnClickLink={(id) =>
@@ -123,7 +124,7 @@ export const CustomerInvoicesList = ({
                   <Title variant="subhead" color="grey700">
                     {translate('text_6250304370f0f700a8fdc291')}
                   </Title>
-                  <InvoiceList
+                  <CustomerInvoiceList
                     loading={loadingFinalized}
                     customerTimezone={customerTimezone}
                     invoiceData={dataFinalized?.customerInvoices}

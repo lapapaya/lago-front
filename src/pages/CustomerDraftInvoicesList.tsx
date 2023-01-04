@@ -13,8 +13,7 @@ import {
 } from '~/generated/graphql'
 import { CustomerInvoiceDetailsTabsOptionsEnum } from '~/layouts/CustomerInvoiceDetails'
 import { PageHeader, theme } from '~/styles'
-// import { InvoicesList } from '~/components/customers/InvoicesList'
-import { InvoiceList } from '~/components/customers/CustomerInvoiceListV2'
+import { CustomerInvoiceList } from '~/components/customers/CustomerInvoiceList'
 
 import { CustomerDetailsTabsOptions } from './CustomerDetails'
 
@@ -98,7 +97,7 @@ const CustomerDraftInvoicesList = () => {
           </MainInfos>
         )}
 
-        <InvoiceList
+        <CustomerInvoiceList
           loading={loading}
           customerTimezone={safeTimezone}
           invoiceData={data?.customerInvoices}

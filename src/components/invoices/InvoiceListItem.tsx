@@ -118,7 +118,7 @@ export const InvoiceListItem = ({
     totalAmountCurrency,
   } = invoice
   const statusConfig = mapStatusConfig(status, paymentStatus)
-  const [retryCollect] = useRetryInvoicePaymentMutation({
+  const [retryCollect, { called }] = useRetryInvoicePaymentMutation({
     onCompleted({ retryInvoicePayment }) {
       if (!!retryInvoicePayment?.id) {
         addToast({
@@ -224,6 +224,7 @@ export const InvoiceListItem = ({
                   startIcon="push"
                   variant="quaternary"
                   align="left"
+                  disabled={called}
                   onClick={async () => {
                     await retryCollect({
                       variables: {

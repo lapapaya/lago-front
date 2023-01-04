@@ -47,14 +47,14 @@ const InvoiceListHeader = ({ customerTimezone }: ListHeader) => {
 
   return (
     <HeaderLine>
-      <Typography variant="bodyHl" color="grey500">
+      <Typography variant="bodyHl" color="grey500" noWrap>
         {translate('text_63ac86d797f728a87b2f9fa7')}
       </Typography>
-      <Typography variant="bodyHl" color="grey500">
+      <Typography variant="bodyHl" color="grey500" noWrap>
         {translate('text_63ac86d797f728a87b2f9fad')}
       </Typography>
 
-      <Typography variant="bodyHl" color="grey500" align="right">
+      <Typography variant="bodyHl" color="grey500" align="right" noWrap>
         {translate('text_63ac86d797f728a87b2f9fb9')}
       </Typography>
       <Tooltip
@@ -81,7 +81,7 @@ interface InvoiceListProps {
   fetchMore?: (options: FetchMoreQueryOptions<{ page: number }>) => Promise<unknown>
 }
 
-export const InvoiceList = ({
+export const CustomerInvoiceList = ({
   loading,
   invoiceData,
   customerTimezone,
@@ -93,63 +93,69 @@ export const InvoiceList = ({
   const { translate } = useInternationalization()
 
   return (
-    <ListWrapper>
-      <InvoiceListHeader customerTimezone={customerTimezone} />
-      <InfiniteScroll
-        onBottom={() => {
-          if (!fetchMore) return
-          const { currentPage = 0, totalPages = 0 } = metadata || {}
+    <ScrollWrapper>
+      <ListWrapper>
+        <InvoiceListHeader customerTimezone={customerTimezone} />
+        <InfiniteScroll
+          onBottom={() => {
+            if (!fetchMore) return
+            const { currentPage = 0, totalPages = 0 } = metadata || {}
 
-          currentPage < totalPages &&
-            !loading &&
-            fetchMore({
-              variables: { page: currentPage + 1 },
-            })
-        }}
-      >
-        {collection &&
-          collection.map((invoice, i) => {
-            const link = getOnClickLink(invoice?.id)
+            currentPage < totalPages &&
+              !loading &&
+              fetchMore({
+                variables: { page: currentPage + 1 },
+              })
+          }}
+        >
+          {collection &&
+            collection.map((invoice, i) => {
+              const link = getOnClickLink(invoice?.id)
 
-            return (
-              <InvoiceListItem
-                className={
-                  !loading && !onSeeAll && collection.length - 1 === i
-                    ? 'last-invoice-item--no-border'
-                    : undefined
-                }
-                key={invoice?.id}
-                to={link}
-                invoice={invoice}
+              return (
+                <InvoiceListItem
+                  className={
+                    !loading && !onSeeAll && collection.length - 1 === i
+                      ? 'last-invoice-item--no-border'
+                      : undefined
+                  }
+                  key={invoice?.id}
+                  to={link}
+                  invoice={invoice}
+                  context="customer"
+                />
+              )
+            })}
+          {loading &&
+            [0, 1, 2].map((_, i) => (
+              <InvoiceListItemSkeleton
+                className={i === 2 ? 'last-invoice-item--no-border' : undefined}
+                key={`invoice-item-skeleton-${i}`}
                 context="customer"
               />
-            )
-          })}
-        {loading &&
-          [0, 1, 2].map((_, i) => (
-            <InvoiceListItemSkeleton
-              className={i === 2 ? 'last-invoice-item--no-border' : undefined}
-              key={`invoice-item-skeleton-${i}`}
-              context="customer"
-            />
-          ))}
-      </InfiniteScroll>
-      {!!onSeeAll && (
-        <PlusButtonWrapper>
-          <Button variant="quaternary" endIcon="arrow-right" onClick={onSeeAll}>
-            {translate('text_638f4d756d899445f18a4a0e')}
-          </Button>
-        </PlusButtonWrapper>
-      )}
-    </ListWrapper>
+            ))}
+        </InfiniteScroll>
+        {!!onSeeAll && (
+          <PlusButtonWrapper>
+            <Button variant="quaternary" endIcon="arrow-right" onClick={onSeeAll}>
+              {translate('text_638f4d756d899445f18a4a0e')}
+            </Button>
+          </PlusButtonWrapper>
+        )}
+      </ListWrapper>
+    </ScrollWrapper>
   )
 }
 
-const HeaderLine = styled(ListHeader)`
-  ${InvoiceListItemGridTemplate(InvoiceListItemContextEnum.customer)}
+const HeaderLine = styled.div`
+  height: ${HEADER_TABLE_HEIGHT}px;
+  display: flex;
+  align-items: center;
+  box-shadow: ${theme.shadows[7]};
   background-color: ${theme.palette.common.white};
   border-radius: 12px 12px 0 0;
   padding: 0 ${theme.spacing(4)};
+  ${InvoiceListItemGridTemplate(InvoiceListItemContextEnum.customer)}
 `
 
 const WithTooltip = styled(Typography)`
@@ -162,11 +168,16 @@ const WithTooltip = styled(Typography)`
 const ListWrapper = styled.div`
   border: 1px solid ${theme.palette.grey[400]};
   border-radius: 12px;
+  min-width: 510px;
 
   .last-invoice-item--no-border {
     box-shadow: none;
     border-radius: 0 0 12px 12px;
   }
+`
+
+const ScrollWrapper = styled.div`
+  overflow: scroll;
 `
 
 const PlusButtonWrapper = styled.div`
